@@ -55,7 +55,17 @@ butraw_t EASYBUT_getPrevState(but_pin_s *bp) {
 }
 
 /**
- * @brief  Store previous pin state to short pressed
+ * @brief  Store  pin state to not pressed
+ * @param  pointer to structure
+ * @retval None
+ */
+void EASYBUT_setDownPress(but_pin_s *bp) {
+	bp->ButStat = BUT_DOWN;
+}
+
+
+/**
+ * @brief  Store  pin state to short pressed
  * @param  pointer to structure
  * @retval None
  */
@@ -64,7 +74,7 @@ void EASYBUT_setShortPress(but_pin_s *bp) {
 }
 
 /**
- * @brief  Store previous pin state to long pressed
+ * @brief  Store  pin state to long pressed
  * @param  pointer to structure
  * @retval None
  */
@@ -73,7 +83,7 @@ void EASYBUT_setLongPress(but_pin_s *bp) {
 }
 
 /**
- * @brief  Store previous pin state to not pressed
+ * @brief  Store  pin state to not pressed
  * @param  pointer to structure
  * @retval None
  */
@@ -132,6 +142,26 @@ butstat_t EASYBUT_getStatData(but_pin_s *bp) {
  */
 uint8_t EASYBUT_getButtonState(butname_t butname, butstat_t butstat) {
 
+
+  //WORKS
+//	if(EASYBUT_getStatData(&ButPin[butname]) == BUT_DOWN && (butstat == BUT_DOWN)){
+//		return 1;
+//	}
+
+	if((butstat == BUT_DOWN)){
+
+	    /* Read raw state for fast response */
+	    if(EASYBUT_getPinState(&ButPin[butname]) == NowIsPressed){
+
+		if(EASYBUT_getStatData(&ButPin[butname]) == BUT_LONG_PRESS){
+		    /* Force set down pressed status */
+		    EASYBUT_setDownPress(&ButPin[butname]);
+		}
+
+		return 1;
+	    }
+	}
+
 	if(EASYBUT_getStatData(&ButPin[butname]) == BUT_SHORT_PRESS && (butstat == BUT_SHORT_PRESS)){
 
 		ButPin[butname].ButStat = BUT_POLLED; /* Avoid repeat action */
@@ -143,10 +173,8 @@ uint8_t EASYBUT_getButtonState(butname_t butname, butstat_t butstat) {
 		return 1;
 	}
 
-	if(EASYBUT_getStatData(&ButPin[butname]) == BUT_DOWN && (butstat == BUT_DOWN)){
-		return 1;
-	}
 
+	/* Else, return false */
 	return 0;
 }
 
